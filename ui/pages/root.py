@@ -6,13 +6,13 @@ from ui.stylesheets.toolbar import STYLE_TOOLBAR_BTN, STYLE_TOOLBAR
 from ui.components.help import HelpItem
 from ui.pages.create_connection import CreateNewConnectionPage
 from ui.pages.connection_list import ConnectionListPage
-from ui.pages.update_connection import UpdateConnectionPage
 
 
 class ApplicationMain(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.state_manager = ApplicationStateManger()
+        self.state_manager = ApplicationStateManger.get_manager()
+        self.state_manager.set_state("application_main", self)
         self.state_manager.set_state("asset_path", f"{os.getcwd()}/assets")
         self.ui_init()
 
@@ -34,10 +34,7 @@ class ApplicationMain(QMainWindow):
             self.toolbar.addWidget(btn)
         # Create New Connection Page
         self.connection_list_page = ConnectionListPage(self)
-        self.connection_list_page.reload_main_page_signal.connect(self.on_page_reload)
-        self.connection_list_page.render_update_signal.connect(self.render_update_page)
         self.create_new_connection_page = CreateNewConnectionPage(self)
-        self.create_new_connection_page.save_success_signal.connect(self.on_page_reload)
 
         # Add pages to stack
         self.application_stack.addWidget(self.connection_list_page)
@@ -81,15 +78,14 @@ class ApplicationMain(QMainWindow):
         help_btn.clicked.connect(self.open_help_popup)
         return [back_btn, help_btn]
 
-    def render_update_page(self, connection_id):
+    def render_update_page(self, update_page):
         for i in range(2, self.application_stack.count()):
-            if isinstance(self.application_stack.widget(i), UpdateConnectionPage):
+            if isinstance(self.application_stack.widget(i), update_page.__class__):
                 self.application_stack.removeWidget(self.application_stack.widget(i))
         self.toolbar.clear()
         for btn in self.render_create_edit_connection_toolbar():
             self.toolbar.addWidget(btn)
-        self.update_page = UpdateConnectionPage(self, connection_id)
-        self.update_page.update_success_signal.connect(self.on_page_reload)
+        self.update_page = update_page
         index = self.application_stack.addWidget(self.update_page)
         self.application_stack.setCurrentIndex(index)
 
@@ -107,7 +103,7 @@ class ApplicationMain(QMainWindow):
             self.toolbar.addWidget(btn)
         self.application_stack.setCurrentIndex(0)
 
-    def on_page_reload(self):
+    def rerender_page(self):
         # Signal Emit Function for connection save
         self.application_stack.setCurrentIndex(0)
         self.toolbar.clear()

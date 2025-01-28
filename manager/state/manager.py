@@ -12,18 +12,26 @@ class ApplicationStateManger:
 
     __instance = None
     __lock = Lock()
+    __state = {}
 
-    def __new__(cls, *args, **kwargs):
+    @classmethod
+    def get_manager(cls):
+        """
+        Get State Manager Instance
+        :return: State Manager Instance
+        """
         with cls.__lock:
             if cls.__instance is None:
-                cls.__instance = super().__new__(cls)
+                cls.__instance = ApplicationStateManger()
             return cls.__instance
 
     def __init__(self):
         self.__state: Dict[str, Any] = {}
 
-    def set_state(self, key: str, value: Any):
-        self.__state[key] = value
+    @classmethod
+    def set_state(cls, key: str, value: Any):
+        cls.__state[key] = value
 
-    def get_state(self, key: str):
-        return self.__state.get(key, None)
+    @classmethod
+    def get_state(cls, key: str):
+        return cls.__state.get(key, None)

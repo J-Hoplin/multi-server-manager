@@ -11,8 +11,9 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
 )
 from backend.connections import retrieve_connection
+from manager.state.manager import ApplicationStateManger
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt
 from ui.stylesheets.fonts import (
     STYLE_PASS_MESSAGE,
     STYLE_ERROR_MESSAGE,
@@ -22,10 +23,9 @@ from backend.connections import test_ssh_connection, update_connection
 
 
 class UpdateConnectionPage(QWidget):
-    update_success_signal = pyqtSignal()
-
     def __init__(self, parent, connection_id):
         super(UpdateConnectionPage, self).__init__(parent)
+        self.state_manager = ApplicationStateManger.get_manager()
         self.target_connection = retrieve_connection(connection_id)
         self.ui_init()
 
@@ -289,4 +289,4 @@ class UpdateConnectionPage(QWidget):
             return
         update_connection(connection_id=self.target_connection[0], **connection_data)
         self.reset_form()
-        self.update_success_signal.emit()
+        self.state_manager.get_state("application_main").rerender_page()
