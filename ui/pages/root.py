@@ -33,10 +33,9 @@ class ApplicationMain(QMainWindow):
             self.toolbar.addWidget(btn)
         # Create New Connection Page
         self.connection_list_page = ConnectionListPage(self)
+        self.connection_list_page.reload_main_page_signal.connect(self.on_page_reload)
         self.create_new_connection_page = CreateNewConnectionPage(self)
-        self.create_new_connection_page.save_success_signal.connect(
-            self.on_connection_save
-        )
+        self.create_new_connection_page.save_success_signal.connect(self.on_page_reload)
 
         # Add pages to stack
         self.application_stack.addWidget(self.connection_list_page)
@@ -96,6 +95,10 @@ class ApplicationMain(QMainWindow):
                 self.toolbar.addWidget(btn)
             self.application_stack.setCurrentIndex(0)
 
-    def on_connection_save(self):
+    def on_page_reload(self):
         # Signal Emit Function for connection save
+        self.application_stack.setCurrentIndex(0)
+        self.toolbar.clear()
+        for btn in self.render_main_page_toolbar():
+            self.toolbar.addWidget(btn)
         self.connection_list_page.refresh_connections()

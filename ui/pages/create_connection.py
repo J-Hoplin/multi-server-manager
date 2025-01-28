@@ -256,6 +256,25 @@ class CreateNewConnectionPage(QWidget):
         else:
             self.set_message_text(f"Connection Failed: {message}", "error")
 
+    def reset_form(self):
+        """
+        Add reset form after adding field
+        """
+        # Form contents reset
+        self.connection_name.clear()
+        self.host.clear()
+        self.port.clear()
+        self.username.clear()
+        self.password.clear()
+        self.key_file_display.clear()
+        self.key_file_display.setProperty("full_path", None)
+
+        # Connection Type
+        self.connection_type.setCurrentIndex(0)
+
+        # Message Container
+        self.message_container.hide()
+
     def save_connection(self):
         connection_data = self.parse_form()
         if not connection_data:
@@ -269,4 +288,5 @@ class CreateNewConnectionPage(QWidget):
             connection_data["password"],
             connection_data["key_file"],
         )
+        self.reset_form()
         self.save_success_signal.emit()

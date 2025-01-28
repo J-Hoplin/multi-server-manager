@@ -18,6 +18,10 @@ def save_connection(
     )
 
 
+def delete_connection(connection_id: int):
+    return database.delete_connection(connection_id)
+
+
 def test_ssh_connection(
     host: str,
     port: int,

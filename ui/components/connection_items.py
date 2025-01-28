@@ -1,5 +1,5 @@
 import os
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -10,11 +10,15 @@ from PyQt5.QtWidgets import (
 )
 from typing import List
 from manager.state.manager import ApplicationStateManger
+from backend.connections import delete_connection
 from ui.stylesheets.toolbar import STYLE_TOOLBAR_BTN
 from PyQt5.QtGui import QIcon
 
 
 class ConnectionItem(QWidget):
+    update_success_signal = pyqtSignal()
+    delete_success_signal = pyqtSignal()
+
     def __init__(self, connections: List, parent_layout):
         super().__init__()
         self.connections = connections
@@ -102,10 +106,20 @@ class ConnectionItem(QWidget):
                 util_btn_layout = QHBoxLayout()
                 util_btn_layout.setSpacing(5)
 
+                # Play Button
+                play_btn = QPushButton()
+                play_btn.setIcon(QIcon(f"{os.getcwd()}/assets/icons/play.svg"))
+                play_btn.setToolTip("Connect")
+                play_btn.setProperty("connection", connection)
+                play_btn.setFixedSize(32, 32)
+                play_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
+                util_btn_layout.addWidget(play_btn)
+
                 # Edit button
                 edit_btn = QPushButton()
                 edit_btn.setIcon(QIcon(f"{os.getcwd()}/assets/icons/edit.svg"))
                 edit_btn.setToolTip("Edit Connection Info")
+                edit_btn.setProperty("connection", connection)
                 edit_btn.setFixedSize(32, 32)
                 edit_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
                 util_btn_layout.addWidget(edit_btn)
@@ -114,8 +128,10 @@ class ConnectionItem(QWidget):
                 delete_btn = QPushButton()
                 delete_btn.setIcon(QIcon(f"{os.getcwd()}/assets/icons/delete.svg"))
                 delete_btn.setToolTip("Delete Connection")
+                delete_btn.setProperty("connection", connection)
                 delete_btn.setFixedSize(32, 32)
                 delete_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
+                delete_btn.clicked.connect(self.delete_connection_info)
                 util_btn_layout.addWidget(delete_btn)
 
                 connection_layout.addLayout(util_btn_layout)
@@ -141,3 +157,10 @@ class ConnectionItem(QWidget):
             self.setLayout(layout)
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.setLayout(layout)
+
+    def delete_connection_info(self):
+        btn = self.sender()
+        connection_data = btn.property("connection")
+        if connection_data:
+            delete_connection(connection_data[0])
+            self.delete_success_signal.emit()
