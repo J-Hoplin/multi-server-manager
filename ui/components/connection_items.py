@@ -16,6 +16,7 @@ from PyQt5.QtGui import QIcon
 
 
 class ConnectionItem(QWidget):
+    render_update_signal = pyqtSignal(str)
     update_success_signal = pyqtSignal()
     delete_success_signal = pyqtSignal()
 
@@ -122,6 +123,7 @@ class ConnectionItem(QWidget):
                 edit_btn.setProperty("connection", connection)
                 edit_btn.setFixedSize(32, 32)
                 edit_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
+                edit_btn.clicked.connect(self.update_connection_info)
                 util_btn_layout.addWidget(edit_btn)
 
                 # Delete Button
@@ -157,6 +159,12 @@ class ConnectionItem(QWidget):
             self.setLayout(layout)
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.setLayout(layout)
+
+    def update_connection_info(self):
+        btn = self.sender()
+        connection_data = btn.property("connection")
+        if connection_data:
+            self.render_update_signal.emit(connection_data[0])
 
     def delete_connection_info(self):
         btn = self.sender()

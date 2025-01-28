@@ -1,30 +1,32 @@
 import os
 from PyQt5.QtWidgets import (
+    QVBoxLayout,
+    QLabel,
+    QFileDialog,
     QWidget,
     QGridLayout,
-    QLabel,
     QLineEdit,
     QComboBox,
     QPushButton,
-    QFileDialog,
     QHBoxLayout,
-    QVBoxLayout,
 )
-from PyQt5.QtCore import Qt, pyqtSignal
+from backend.connections import retrieve_connection
 from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, pyqtSignal
 from ui.stylesheets.fonts import (
     STYLE_PASS_MESSAGE,
     STYLE_ERROR_MESSAGE,
     STYLE_PENDING_MESSAGE,
 )
-from backend.connections import test_ssh_connection, save_connection
+from backend.connections import test_ssh_connection, update_connection
 
 
-class CreateNewConnectionPage(QWidget):
-    save_success_signal = pyqtSignal()
+class UpdateConnectionPage(QWidget):
+    update_success_signal = pyqtSignal()
 
-    def __init__(self, parent):
-        super(CreateNewConnectionPage, self).__init__(parent)
+    def __init__(self, parent, connection_id):
+        super(UpdateConnectionPage, self).__init__(parent)
+        self.target_connection = retrieve_connection(connection_id)
         self.ui_init()
 
     def ui_init(self):
@@ -32,23 +34,28 @@ class CreateNewConnectionPage(QWidget):
         self.main_layout.setSpacing(7)
         self.main_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Base Connection Information: Name, Host, Port, Username
+        # Should retrieve and set current state
         self.connection_name = QLineEdit()
+        self.connection_name.setText(self.target_connection[1])
         self.host = QLineEdit()
+        self.host.setText(self.target_connection[2])
         self.port = QLineEdit()
-        self.port.setPlaceholderText("Default port is 22")
+        self.port.setText(str(self.target_connection[3]))
         self.username = QLineEdit()
+        self.username.setText(self.target_connection[4])
 
         # Connection Type
         self.connection_type = QComboBox()
         self.connection_type.addItems(["password", "key"])
+        self.connection_type.setCurrentText(self.target_connection[5])
         self.connection_type.currentTextChanged.connect(self.on_connection_type_changed)
-
-        # Password Field
+        # Password
         self.password_container = QWidget()
         self.password_layout = QHBoxLayout(self.password_container)
         self.password_layout.setContentsMargins(0, 0, 0, 0)
         self.password = QLineEdit()
+        if self.target_connection[5] == "password":
+            self.password.setText(self.target_connection[6])
         self.password.setEchoMode(QLineEdit.Password)
         self.password_visibility_btn = QPushButton()
         self.password_visibility_btn.setIcon(
@@ -59,7 +66,7 @@ class CreateNewConnectionPage(QWidget):
         self.password_layout.addWidget(self.password)
         self.password_layout.addWidget(self.password_visibility_btn)
 
-        # Key file selection
+        # Key File
         self.key_file_container = QWidget()
         key_file_layout = QHBoxLayout(self.key_file_container)
         key_file_layout.setContentsMargins(0, 0, 0, 0)
@@ -67,11 +74,12 @@ class CreateNewConnectionPage(QWidget):
         self.key_file_display.setReadOnly(True)
         self.browse_button = QPushButton("Browse")
         self.browse_button.clicked.connect(self.browse_key_file)
+        if self.target_connection[5] == "key":
+            self.key_file_display.setText(os.path.basename(self.target_connection[7]))
+            self.key_file_display.setProperty("file_path", self.target_connection[7])
         key_file_layout.addWidget(self.key_file_display)
         key_file_layout.addWidget(self.browse_button)
-        self.key_file_container.hide()
 
-        # Labels and forms layout
         label_alignment_rule = Qt.AlignRight | Qt.AlignVCenter
         fields = [
             ("Connection Name", self.connection_name),
@@ -80,7 +88,6 @@ class CreateNewConnectionPage(QWidget):
             ("Username", self.username),
             ("Connection Type", self.connection_type),
         ]
-
         for row, (label_text, widget) in enumerate(fields):
             label = QLabel(label_text)
             label.setAlignment(label_alignment_rule)
@@ -95,7 +102,6 @@ class CreateNewConnectionPage(QWidget):
             self.main_layout.addWidget(label, row, 0)
             self.main_layout.addWidget(widget, row, 1)
 
-        # Password, Keyfile container
         self.password_label = QLabel("Password")
         self.password_label.setStyleSheet(
             """
@@ -109,21 +115,23 @@ class CreateNewConnectionPage(QWidget):
         self.key_file_label = QLabel("Key File")
         self.key_file_label.setStyleSheet(
             """
-            QLabel {
-                font-weight: bold;
-                font-size: 13px;
-            }
+                QLabel {
+                    font-weight: bold;
+                    font-size: 13px;
+                }
         """
         )
         self.key_file_label.setAlignment(label_alignment_rule)
-        self.key_file_label.hide()
-
-        # Password/Key File
         self.main_layout.addWidget(self.password_label, 5, 0)
         self.main_layout.addWidget(self.password_container, 5, 1)
         self.main_layout.addWidget(self.key_file_label, 5, 0)
         self.main_layout.addWidget(self.key_file_container, 5, 1)
-
+        if self.target_connection[5] != "password":
+            self.password_container.hide()
+            self.password_label.hide()
+        else:
+            self.key_file_container.hide()
+            self.key_file_label.hide()
         self.buttons_container = QWidget()
         self.buttons_layout = QHBoxLayout(self.buttons_container)
         self.buttons_layout.setContentsMargins(0, 0, 0, 0)
@@ -134,7 +142,7 @@ class CreateNewConnectionPage(QWidget):
 
         # Save Connection
         self.save_btn = QPushButton("Save Connection")
-        self.save_btn.clicked.connect(self.save_connection)
+        self.save_btn.clicked.connect(self.update_connection)
 
         # Add buttons to layout
         self.buttons_layout.addWidget(self.test_connection_btn)
@@ -181,12 +189,6 @@ class CreateNewConnectionPage(QWidget):
                 QIcon(f"{os.getcwd()}/assets/icons/visible.svg")
             )
 
-    def browse_key_file(self):
-        file_name, _ = QFileDialog.getOpenFileName(self, "Select SSH Key File")
-        if file_name:
-            self.key_file_display.setText(os.path.basename(file_name))
-            self.key_file_display.setProperty("full_path", file_name)
-
     def set_message_text(self, message, status):
         if status == "error":
             self.message_label.setStyleSheet(STYLE_ERROR_MESSAGE)
@@ -196,6 +198,12 @@ class CreateNewConnectionPage(QWidget):
             self.message_label.setStyleSheet(STYLE_PENDING_MESSAGE)
         self.message_label.setText(message)
         self.message_container.show()
+
+    def browse_key_file(self):
+        file_name, _ = QFileDialog.getOpenFileName(self, "Select SSH Key File")
+        if file_name:
+            self.key_file_display.setText(os.path.basename(file_name))
+            self.key_file_display.setProperty("full_path", file_name)
 
     def parse_form(self):
         name = self.connection_name.text()
@@ -275,18 +283,10 @@ class CreateNewConnectionPage(QWidget):
         # Message Container
         self.message_container.hide()
 
-    def save_connection(self):
+    def update_connection(self):
         connection_data = self.parse_form()
         if not connection_data:
             return
-        save_connection(
-            connection_data["name"],
-            connection_data["host"],
-            connection_data["port"],
-            connection_data["user"],
-            connection_data["connection_type"],
-            connection_data["password"],
-            connection_data["key_file"],
-        )
+        update_connection(connection_id=self.target_connection[0], **connection_data)
         self.reset_form()
-        self.save_success_signal.emit()
+        self.update_success_signal.emit()

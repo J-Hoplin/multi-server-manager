@@ -50,6 +50,10 @@ class ApplicationPersistManager:
         self.cursor.execute(LIST_CONNECTION_TABLE)
         return self.cursor.fetchall()
 
+    def retrieve_connection(self, connection_id):
+        self.cursor.execute("SELECT * FROM connections WHERE id = ?", (connection_id,))
+        return self.cursor.fetchone()
+
     def delete_connection(self, connection_id):
         self.cursor.execute(DELETE_CONNECTION_TABLE, (connection_id,))
         self.conn.commit()
