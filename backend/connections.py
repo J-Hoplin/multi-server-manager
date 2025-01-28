@@ -10,11 +10,30 @@ def get_connections():
     return database.get_connections()
 
 
+def retrieve_connection(connection_id: int):
+    return database.retrieve_connection(connection_id)
+
+
 def save_connection(
     name, host, port, user, connection_type, password=None, key_file=None
 ) -> bool:
     return database.add_connection(
         name, host, port, user, connection_type, password, key_file
+    )
+
+
+def update_connection(
+    connection_id: int,
+    name,
+    host,
+    port,
+    user,
+    connection_type,
+    password=None,
+    key_file=None,
+) -> bool:
+    return database.update_connection(
+        connection_id, name, host, port, user, connection_type, password, key_file
     )
 
 

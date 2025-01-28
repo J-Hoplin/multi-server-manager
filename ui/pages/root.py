@@ -6,6 +6,7 @@ from ui.stylesheets.toolbar import STYLE_TOOLBAR_BTN, STYLE_TOOLBAR
 from ui.components.help import HelpItem
 from ui.pages.create_connection import CreateNewConnectionPage
 from ui.pages.connection_list import ConnectionListPage
+from ui.pages.update_connection import UpdateConnectionPage
 
 
 class ApplicationMain(QMainWindow):
@@ -34,6 +35,7 @@ class ApplicationMain(QMainWindow):
         # Create New Connection Page
         self.connection_list_page = ConnectionListPage(self)
         self.connection_list_page.reload_main_page_signal.connect(self.on_page_reload)
+        self.connection_list_page.render_update_signal.connect(self.render_update_page)
         self.create_new_connection_page = CreateNewConnectionPage(self)
         self.create_new_connection_page.save_success_signal.connect(self.on_page_reload)
 
@@ -79,6 +81,18 @@ class ApplicationMain(QMainWindow):
         help_btn.clicked.connect(self.open_help_popup)
         return [back_btn, help_btn]
 
+    def render_update_page(self, connection_id):
+        for i in range(2, self.application_stack.count()):
+            if isinstance(self.application_stack.widget(i), UpdateConnectionPage):
+                self.application_stack.removeWidget(self.application_stack.widget(i))
+        self.toolbar.clear()
+        for btn in self.render_create_edit_connection_toolbar():
+            self.toolbar.addWidget(btn)
+        self.update_page = UpdateConnectionPage(self, connection_id)
+        self.update_page.update_success_signal.connect(self.on_page_reload)
+        index = self.application_stack.addWidget(self.update_page)
+        self.application_stack.setCurrentIndex(index)
+
     def create_connection(self):
         if self.application_stack.currentIndex() == 0:
             self.setWindowTitle("Create New Connection")
@@ -88,12 +102,10 @@ class ApplicationMain(QMainWindow):
             self.application_stack.setCurrentIndex(1)
 
     def back_to_main_page(self):
-        if self.application_stack.currentIndex() == 1:
-            self.setWindowTitle("Connections")
-            self.toolbar.clear()
-            for btn in self.render_main_page_toolbar():
-                self.toolbar.addWidget(btn)
-            self.application_stack.setCurrentIndex(0)
+        self.toolbar.clear()
+        for btn in self.render_main_page_toolbar():
+            self.toolbar.addWidget(btn)
+        self.application_stack.setCurrentIndex(0)
 
     def on_page_reload(self):
         # Signal Emit Function for connection save

@@ -234,7 +234,7 @@ class CreateNewConnectionPage(QWidget):
             "name": name,
             "host": host,
             "port": port,
-            "username": username,
+            "user": username,
             "connection_type": connection_type,
             "password": password,
             "key_file": key_file,
@@ -247,7 +247,7 @@ class CreateNewConnectionPage(QWidget):
         test_result, message = test_ssh_connection(
             host=connection_data["host"],
             port=connection_data["port"],
-            username=connection_data["username"],
+            username=connection_data["user"],
             password=connection_data["password"],
             key_file=connection_data["key_file"],
         )
@@ -283,7 +283,7 @@ class CreateNewConnectionPage(QWidget):
             connection_data["name"],
             connection_data["host"],
             connection_data["port"],
-            connection_data["username"],
+            connection_data["user"],
             connection_data["connection_type"],
             connection_data["password"],
             connection_data["key_file"],
