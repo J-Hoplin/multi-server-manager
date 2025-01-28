@@ -13,6 +13,7 @@ from manager.state.manager import ApplicationStateManger
 from backend.connections import delete_connection
 from ui.stylesheets.toolbar import STYLE_TOOLBAR_BTN
 from PyQt5.QtGui import QIcon
+from ui.pages.update_connection import UpdateConnectionPage
 
 
 class ConnectionItem(QWidget):
@@ -123,7 +124,7 @@ class ConnectionItem(QWidget):
                 edit_btn.setProperty("connection", connection)
                 edit_btn.setFixedSize(32, 32)
                 edit_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
-                edit_btn.clicked.connect(self.update_connection_info)
+                edit_btn.clicked.connect(self.render_update)
                 util_btn_layout.addWidget(edit_btn)
 
                 # Delete Button
@@ -160,15 +161,17 @@ class ConnectionItem(QWidget):
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.setLayout(layout)
 
-    def update_connection_info(self):
+    def render_update(self):
         btn = self.sender()
-        connection_data = btn.property("connection")
-        if connection_data:
-            self.render_update_signal.emit(connection_data[0])
+        connection_id = btn.property("connection")[0]
+        main = self.state_manager.get_state("application_main")
+        update_page = UpdateConnectionPage(main, connection_id)
+        main.render_update_page(update_page)
 
     def delete_connection_info(self):
         btn = self.sender()
+        main = self.state_manager.get_state("application_main")
         connection_data = btn.property("connection")
         if connection_data:
             delete_connection(connection_data[0])
-            self.delete_success_signal.emit()
+            main.rerender_page()

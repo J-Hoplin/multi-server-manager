@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
 )
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from ui.stylesheets.fonts import (
     STYLE_PASS_MESSAGE,
@@ -18,13 +18,13 @@ from ui.stylesheets.fonts import (
     STYLE_PENDING_MESSAGE,
 )
 from backend.connections import test_ssh_connection, save_connection
+from manager.state.manager import ApplicationStateManger
 
 
 class CreateNewConnectionPage(QWidget):
-    save_success_signal = pyqtSignal()
-
     def __init__(self, parent):
         super(CreateNewConnectionPage, self).__init__(parent)
+        self.state_manager = ApplicationStateManger.get_manager()
         self.ui_init()
 
     def ui_init(self):
@@ -289,4 +289,5 @@ class CreateNewConnectionPage(QWidget):
             connection_data["key_file"],
         )
         self.reset_form()
-        self.save_success_signal.emit()
+        main = self.state_manager.get_state("application_main")
+        main.rerender_page()

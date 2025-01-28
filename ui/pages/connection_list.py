@@ -1,16 +1,14 @@
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea
 from PyQt5.QtCore import Qt
 from backend.connections import get_connections
 from ui.components.connection_items import ConnectionItem
+from manager.state.manager import ApplicationStateManger
 
 
 class ConnectionListPage(QWidget):
-    reload_main_page_signal = pyqtSignal()
-    render_update_signal = pyqtSignal(str)
-
     def __init__(self, parent):
         super(ConnectionListPage, self).__init__(parent)
+        self.state_manager = ApplicationStateManger.get_manager()
         self.ui_init()
 
     def ui_init(self):
@@ -35,12 +33,8 @@ class ConnectionListPage(QWidget):
         self.connection_items = ConnectionItem(connections, self.connection_layout)
         # Signal for delete success
         self.connection_items.delete_success_signal.connect(self.refresh_connections)
-        self.connection_items.render_update_signal.connect(self.render_update)
         self.connection_layout.addWidget(self.connection_items)
         self.scroll_area.setWidget(self.scroll_widget)
-
-    def render_update(self, connection_id):
-        self.render_update_signal.emit(connection_id)
 
     def refresh_connections(self):
         # 기존 scroll widget 제거
@@ -49,6 +43,3 @@ class ConnectionListPage(QWidget):
 
         # 새로운 connection 설정
         self.setup_connections()
-
-    def on_main_page_reload(self):
-        self.reload_main_page_signal.emit()
