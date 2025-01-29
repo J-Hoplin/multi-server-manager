@@ -37,9 +37,6 @@ class ConnectionListPage(QWidget):
         self.scroll_area.setWidget(self.scroll_widget)
 
     def refresh_connections(self):
-        # 기존 scroll widget 제거
         if self.scroll_area.widget():
             self.scroll_area.takeWidget().deleteLater()
-
-        # 새로운 connection 설정
         self.setup_connections()

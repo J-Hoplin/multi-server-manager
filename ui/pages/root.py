@@ -6,9 +6,10 @@ from ui.stylesheets.toolbar import STYLE_TOOLBAR_BTN, STYLE_TOOLBAR
 from ui.components.help import HelpItem
 from ui.pages.create_connection import CreateNewConnectionPage
 from ui.pages.connection_list import ConnectionListPage
+from ui.pages.dashboard import MainDashboard
 
 
-class ApplicationMain(QMainWindow):
+class ConnectionManager(QMainWindow):
     def __init__(self):
         super().__init__()
         self.state_manager = ApplicationStateManger.get_manager()
@@ -110,3 +111,14 @@ class ApplicationMain(QMainWindow):
         for btn in self.render_main_page_toolbar():
             self.toolbar.addWidget(btn)
         self.connection_list_page.refresh_connections()
+
+    def close_and_render_dashboard(
+        self, host, port, username, connection_type, password, key_file
+    ):
+        self.close()
+        self.main_dashboard = MainDashboard(
+            host, port, username, connection_type, password, key_file
+        )
+        # Remove state for illeagal access
+        self.state_manager.remove_state("application_main")
+        self.main_dashboard.show()

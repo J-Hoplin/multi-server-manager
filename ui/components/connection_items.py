@@ -33,7 +33,7 @@ class ConnectionItem(QWidget):
         if self.connections:
             layout = QVBoxLayout()
             layout.setContentsMargins(7, 7, 7, 7)
-            layout.setSpacing(7)  # 연결 항목 간의 간격
+            layout.setSpacing(7)
 
             for connection in self.connections:
                 # Single Component Container
@@ -115,6 +115,7 @@ class ConnectionItem(QWidget):
                 play_btn.setProperty("connection", connection)
                 play_btn.setFixedSize(32, 32)
                 play_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
+                play_btn.clicked.connect(self.start_dashboard)
                 util_btn_layout.addWidget(play_btn)
 
                 # Edit button
@@ -160,6 +161,19 @@ class ConnectionItem(QWidget):
             self.setLayout(layout)
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.setLayout(layout)
+
+    def start_dashboard(self):
+        btn = self.sender()
+        connection_data = btn.property("connection")
+        main = self.state_manager.get_state("application_main")
+        main.close_and_render_dashboard(
+            connection_data[2],
+            connection_data[3],
+            connection_data[4],
+            connection_data[5],
+            connection_data[6],
+            connection_data[7],
+        )
 
     def render_update(self):
         btn = self.sender()

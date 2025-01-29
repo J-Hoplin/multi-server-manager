@@ -413,6 +413,38 @@ files = [
 ]
 
 [[package]]
+name = "pyqtchart"
+version = "5.15.7"
+description = "Python bindings for the Qt Charts library"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "PyQtChart-5.15.7-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:c0f52733a377620ef642ea23061e830b989c2ef2c83181de82d9f548a3eacbfe"},
+    {file = "PyQtChart-5.15.7-cp38-abi3-macosx_11_0_x86_64.whl", hash = "sha256:97b45cfe5c9b0f648fb6ade8ee0a4b30e3e1cce8edab4f3d6ade789c5da9f4d8"},
+    {file = "PyQtChart-5.15.7-cp38-abi3-manylinux_2_17_x86_64.whl", hash = "sha256:918303e869609ebd65caac7f58e08f07695313503828db0ea527ff5f9779fab6"},
+    {file = "PyQtChart-5.15.7-cp38-abi3-win32.whl", hash = "sha256:1f97cb0be77d3271342f064e47eabc25622dbd407abf016acaebdb83c6ad915f"},
+    {file = "PyQtChart-5.15.7-cp38-abi3-win_amd64.whl", hash = "sha256:34aeed540d24bad558a1c4751f5b9d92e0248e2131fc5877c70221024d2fb02e"},
+    {file = "PyQtChart-5.15.7.tar.gz", hash = "sha256:bc9f1d26c725e820b0fff8db6e906e8b286128a14b3a98c59a0cd0c3d9924095"},
+]
+
+[package.dependencies]
+PyQt5 = ">=5.15.4"
+PyQt5-sip = ">=12.13,<13"
+PyQtChart-Qt5 = ">=5.15.0,<5.16.0"
+
+[[package]]
+name = "pyqtchart-qt5"
+version = "5.15.16"
+description = "The subset of a Qt installation needed by PyQtChart."
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyQtChart_Qt5-5.15.16-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:65892ecd086d9af5b878a47f22ecb23ad2ccf5a645808e938df0aabe9c4bb0f3"},
+    {file = "PyQtChart_Qt5-5.15.16-py3-none-macosx_11_0_arm64.whl", hash = "sha256:19b39901bda3027b0a994ffa551438a688d031e8901c8e02327c932534288772"},
+    {file = "PyQtChart_Qt5-5.15.16-py3-none-manylinux2014_x86_64.whl", hash = "sha256:4b2ff7c19e7d8f21bee24b1212b3aed89a1719a77636250a80494c8a472b5586"},
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.2"
 description = "YAML parser and emitter for Python"
@@ -497,4 +529,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "e493c2ea31ac1957ae42e56aba267703b71c1af9c4326e1ecd875da4385e839e"
+content-hash = "5c545e19fc794bd25485851508036448669c797a50e26416c780918c0529751d"
