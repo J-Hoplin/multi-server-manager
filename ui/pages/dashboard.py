@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
     QToolBar,
     QWidget,
     QVBoxLayout,
+    QStackedWidget,
 )
 from manager.state.manager import ApplicationStateManger
 from ui.stylesheets.toolbar import STYLE_TOOLBAR_BTN, STYLE_TOOLBAR
@@ -17,6 +18,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QTimer, Qt, QThread, pyqtSignal
 from backend.system import SystemCommands
 from ui.components.dashboard import SystemMonitorWidget
+from ui.components.terminal import TerminalWidget
 
 
 class SSHConnectionThread(QThread):
@@ -78,13 +80,17 @@ class DashboardToolbar(QToolBar):
         home_btn.setFixedSize(32, 32)
         home_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
         home_btn.clicked.connect(self.home_btn_clicked)
-        terminal_btn = QPushButton()
-        terminal_btn.setIcon(QIcon(f"{os.getcwd()}/assets/icons/terminal.svg"))
-        terminal_btn.setToolTip("Open Terminal")
-        terminal_btn.setFixedSize(32, 32)
-        terminal_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
+
+        # Terminal Button
+        self.terminal_btn = QPushButton()
+        self.terminal_btn.setIcon(QIcon(f"{os.getcwd()}/assets/icons/terminal.svg"))
+        self.terminal_btn.setToolTip("Open Terminal")
+        self.terminal_btn.setFixedSize(32, 32)
+        self.terminal_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
+        self.terminal_btn.clicked.connect(self.terminal_btn_clicked)
         self.addWidget(home_btn)
-        self.addWidget(terminal_btn)
+        self.addWidget(self.terminal_btn)
+
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.addWidget(spacer)
@@ -106,6 +112,55 @@ class DashboardToolbar(QToolBar):
         self.timer.timeout.connect(self.update_server_info)
         self.timer.start(1000)
         self.update_server_info()
+
+    def terminal_btn_clicked(self):
+        self.clear()
+
+        home_btn = QPushButton()
+        home_btn.setIcon(QIcon(f"{os.getcwd()}/assets/icons/home.svg"))
+        home_btn.setToolTip("Home")
+        home_btn.setFixedSize(32, 32)
+        home_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
+        home_btn.clicked.connect(self.home_btn_clicked)
+
+        self.back_btn = QPushButton()
+        self.back_btn.setIcon(QIcon(f"{os.getcwd()}/assets/icons/back.svg"))
+        self.back_btn.setToolTip("Back to Dashboard")
+        self.back_btn.setFixedSize(32, 32)
+        self.back_btn.setStyleSheet(STYLE_TOOLBAR_BTN)
+        self.back_btn.clicked.connect(self.back_btn_clicked)
+
+        self.addWidget(home_btn)
+        self.addWidget(self.back_btn)
+
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.addWidget(spacer)
+
+        # Server Info Label
+        self.server_info_label = QLabel()
+        self.server_info_label.setStyleSheet(
+            """
+            color: #666;
+            min-width: 300px;
+        """
+        )
+        self.server_info_label.setFixedHeight(40)
+        self.server_info_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.addWidget(self.server_info_label)
+
+        # Interval 1s
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_server_info)
+        self.timer.start(1000)
+        self.back_btn.show()
+        main_dashboard = self.state_manager.get_state("dashboard_main")
+        main_dashboard.show_terminal()
+
+    def back_btn_clicked(self):
+        main_dashboard = self.state_manager.get_state("dashboard_main")
+        self.render_dashboard_main_toolbar()
+        main_dashboard.show_dashboard()
 
     def update_server_info(self):
         try:
@@ -242,25 +297,21 @@ class MainDashboard(QMainWindow):
         # Dashboard UI settings
         self.setWindowTitle("Dashboard")
         self.setMinimumSize(850, 650)
-
-        # Create central widget and main layout
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout()
-        central_widget.setLayout(main_layout)
-
-        # Toolbar settings
-        self.toolbar = DashboardToolbar()
-        self.addToolBar(self.toolbar)
-        self.toolbar.render_dashboard_main_toolbar()
-
-        # Create and add system monitor
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        self.main_layout = QVBoxLayout()
+        self.central_widget.setLayout(self.main_layout)
+        self.stacked_widget = QStackedWidget()
         self.system_monitor = SystemMonitorWidget(
             self.state_manager.get_state("ssh_connection")
         )
-        main_layout.addWidget(self.system_monitor)
-
-        # Set dark theme stylesheet
+        self.terminal = TerminalWidget(self.state_manager.get_state("ssh_connection"))
+        self.stacked_widget.addWidget(self.system_monitor)
+        self.stacked_widget.addWidget(self.terminal)
+        self.main_layout.addWidget(self.stacked_widget)
+        self.toolbar = DashboardToolbar()
+        self.addToolBar(self.toolbar)
+        self.toolbar.render_dashboard_main_toolbar()
         self.setStyleSheet(
             """
             QMainWindow {
@@ -271,3 +322,9 @@ class MainDashboard(QMainWindow):
             }
         """
         )
+
+    def show_terminal(self):
+        self.stacked_widget.setCurrentWidget(self.terminal)
+
+    def show_dashboard(self):
+        self.stacked_widget.setCurrentWidget(self.system_monitor)

@@ -30,12 +30,10 @@ class ApplicationStateManger:
 
     @classmethod
     def set_state(cls, key: str, value: Any):
-        print(cls.__state)
         cls.__state[key] = value
 
     @classmethod
     def get_state(cls, key: str):
-        print(cls.__state)
         return cls.__state.get(key, None)
 
     @classmethod
