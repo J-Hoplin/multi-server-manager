@@ -25,9 +25,9 @@ Just personal usage gui application for manging multiple ssh connections. ~~Not 
 
 ### Graphics
 
-<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 800px;">
-    <img src="./img/2.png" style="width: 100%; height: auto;">
-    <img src="./img/3.png" style="width: 100%; height: auto;">
-    <img src="./img/1.png" style="width: 100%; height: auto;">
-    <img src="./img/4.png" style="width: 100%; height: auto;">
+<div style="display: grid; grid-template-columns: repeat(2, 600px); gap: 30px; justify-content: center; margin: 0 auto;">
+    <img src="./img/2.png" style="width: 350px; height: 250px; object-fit: cover;">
+    <img src="./img/3.png" style="width: 350px; height: 250px; object-fit: cover;">
+    <img src="./img/1.png" style="width: 350px; height: 250px; object-fit: cover;">
+    <img src="./img/4.png" style="width: 350px; height: 250px; object-fit: cover;">
 </div>
